@@ -4,20 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PAGAF — Precision AG for All Farmers | Powered by nltGIS.ai</title>
-  <meta name="description" content="Free precision agriculture tools powered by nltGIS.ai. Interactive field mapping, satellite crop analysis, and prescription maps for every farmer.">
+  <meta name="description" content="Free precision agriculture tools powered by nltGIS.ai. Interactive field mapping, NDVI analysis, soil moisture, weather forecasts, and yield predictions.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
-  <link href="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.css" rel="stylesheet">
   <link rel="stylesheet" href="css/pagaf.css">
 </head>
 <body>
+
   <!-- Announcement Bar -->
   <div class="announcement-bar">
     <div class="announcement-content">
-      <span class="announcement-icon">🌾</span>
-      <span>Powered by <a href="https://nltgis.ai" target="_blank">nltGIS.ai</a> — AI-Native Spatial Intelligence</span>
+      <span>&#x1F33F;</span>
+      <span>Powered by <a href="https://nltgis.ai" target="_blank">nltGIS.ai</a> &mdash; AI-Native Spatial Intelligence</span>
       <span class="badge">Launching Earth Day 2026</span>
     </div>
   </div>
@@ -26,7 +26,7 @@
   <nav class="navbar" id="navbar">
     <div class="nav-container">
       <a href="/" class="nav-logo">
-        <span class="logo-icon">🌿</span>
+        <span class="logo-icon">&#x1F33E;</span>
         <span class="logo-text">PAGAF</span>
         <span class="logo-subtitle">Precision AG for All Farmers</span>
       </a>
@@ -38,21 +38,23 @@
         <a href="#about" class="nav-link">About</a>
       </div>
       <div class="nav-actions">
-        <a href="https://nltgis.ai" target="_blank" class="btn btn-ghost">
-          <span class="nltgis-badge">nG</span> nltGIS.ai
+        <a href="https://nltgis.ai" target="_blank" class="nltgis-badge">
+          <span class="badge-icon">nG</span>
+          <span>nltGIS.ai</span>
         </a>
-        <a href="#map-section" class="btn btn-primary">Start Mapping</a>
+        <a href="#map-section" class="btn-primary">Start Mapping</a>
       </div>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
     </div>
   </nav>
 
-  <!-- Hero with Interactive Map -->
+  <!-- ===== HERO: Full-Screen Map ===== -->
   <section class="hero-map-section" id="map-section">
     <div id="map" class="hero-map"></div>
-    <!-- Map Overlay UI -->
+
+    <!-- Centered Hero Content -->
     <div class="map-overlay-container">
       <div class="map-hero-content">
         <div class="hero-badge">
@@ -64,263 +66,376 @@
           <span class="gradient-text">For Every Farmer</span>
         </h1>
         <p class="hero-description">
-          Draw your field on the map. Get satellite-powered crop intelligence.
-          Free forever, powered by nltGIS.ai.
+          Draw your field on the map. Get satellite-powered crop intelligence. Free forever, powered by nltGIS.ai.
         </p>
       </div>
+    </div>
 
-      <!-- Query Bar (nltgis.ai style) -->
-      <div class="query-bar" id="queryBar">
-        <div class="query-input-wrapper">
-          <svg class="query-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" class="query-input" id="queryInput" placeholder="Ask about your field... e.g. 'Show NDVI for my corn field'" />
-          <button class="query-btn" id="queryBtn">Analyze</button>
-        </div>
-        <div class="query-suggestions">
-          <button class="suggestion" data-query="ndvi">🌱 NDVI Analysis</button>
-          <button class="suggestion" data-query="soil">🏔️ Soil Moisture</button>
-          <button class="suggestion" data-query="weather">🌤️ Weather Forecast</button>
-          <button class="suggestion" data-query="yield">📊 Yield Estimate</button>
-        </div>
+    <!-- Query Bar — bottom of viewport -->
+    <div class="query-bar-wrapper">
+      <div class="query-bar">
+        <span class="query-icon">&#x1F50D;</span>
+        <input type="text" id="queryInput" class="query-input" placeholder="Ask about your field... e.g. 'Show NDVI for my corn field'">
+        <button id="queryBtn" class="query-btn">Analyze</button>
       </div>
+      <div class="suggestions">
+        <button class="suggestion" data-query="ndvi">&#x1F331; NDVI Analysis</button>
+        <button class="suggestion" data-query="soil">&#x1F3D4;&#xFE0F; Soil Moisture</button>
+        <button class="suggestion" data-query="weather">&#x1F324;&#xFE0F; Weather Forecast</button>
+        <button class="suggestion" data-query="yield">&#x1F4CA; Yield Estimate</button>
+      </div>
+    </div>
 
-      <!-- Draw Tools Panel -->
-      <div class="draw-panel" id="drawPanel">
-        <div class="draw-panel-header">
-          <h3>🗺️ Field Tools</h3>
-          <button class="draw-panel-close" id="drawPanelClose">×</button>
-        </div>
-        <div class="draw-tools">
-          <button class="draw-tool active" id="drawPolygon" title="Draw field boundary">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
-            <span>Draw Field</span>
-          </button>
-          <button class="draw-tool" id="drawPoint" title="Drop a pin">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>Pin</span>
-          </button>
-          <button class="draw-tool" id="clearDraw" title="Clear all">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            <span>Clear</span>
-          </button>
-        </div>
-        <div class="field-info" id="fieldInfo">
+    <!-- Draw Tools Panel — top right -->
+    <div class="draw-panel" id="drawPanel">
+      <div class="draw-panel-header">
+        <span>&#x1F5FA;&#xFE0F; Field Tools</span>
+        <button class="draw-close" id="drawPanelClose">&times;</button>
+      </div>
+      <div class="draw-panel-body">
+        <button class="draw-btn active" id="drawPolygon">
+          <span class="draw-btn-icon">&#x2B1B;</span> Draw Field
+        </button>
+        <button class="draw-btn" id="drawPoint">
+          <span class="draw-btn-icon">&#x1F4CD;</span> Pin
+        </button>
+        <button class="draw-btn" id="clearDraw">
+          <span class="draw-btn-icon">&#x1F5D1;</span> Clear
+        </button>
+      </div>
+      <div class="draw-panel-footer">
+        <div id="fieldInfo">
           <p class="field-info-placeholder">Draw a field boundary to get started</p>
         </div>
       </div>
+    </div>
 
-      <!-- Analysis Results Panel -->
-      <div class="analysis-panel" id="analysisPanel">
-        <div class="analysis-header">
-          <h3>📊 Analysis Results</h3>
-          <button class="analysis-close" id="analysisClose">×</button>
+    <!-- Analysis Results Panel — top left -->
+    <div class="analysis-panel" id="analysisPanel">
+      <div class="analysis-panel-header">
+        <span>&#x1F4CA; Analysis Results</span>
+        <button class="analysis-close" id="analysisClose">&times;</button>
+      </div>
+      <div id="analysisBody"></div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value">200+</div>
+          <div class="stat-label">Data Sources</div>
         </div>
-        <div class="analysis-body" id="analysisBody">
-          <!-- Populated by JS -->
+        <div class="stat-item">
+          <div class="stat-value">Free</div>
+          <div class="stat-label">Forever</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">NIST</div>
+          <div class="stat-label">800-53 Secure</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">API</div>
+          <div class="stat-label">First Design</div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Map Stats Bar -->
-    <div class="map-stats-bar">
-      <div class="map-stat"><span class="map-stat-value">200+</span><span class="map-stat-label">Data Sources</span></div>
-      <div class="map-stat-divider"></div>
-      <div class="map-stat"><span class="map-stat-value">Free</span><span class="map-stat-label">Forever</span></div>
-      <div class="map-stat-divider"></div>
-      <div class="map-stat"><span class="map-stat-value">NIST</span><span class="map-stat-label">800-53 Secure</span></div>
-      <div class="map-stat-divider"></div>
-      <div class="map-stat"><span class="map-stat-value">API</span><span class="map-stat-label">First Design</span></div>
+  <!-- Data Sources -->
+  <div class="data-sources">
+    <div class="container">
+      BUILT ON DATA FROM
+      <strong>USDA</strong> <span>&middot;</span>
+      <strong>NASA</strong> <span>&middot;</span>
+      <strong>NOAA</strong> <span>&middot;</span>
+      <strong>USGS</strong> <span>&middot;</span>
+      <strong>Sentinel-2</strong> <span>&middot;</span>
+      <strong>OpenStreetMap</strong>
     </div>
-  </section>
+  </div>
 
-  <!-- Trusted By -->
-  <section class="trusted-by">
-    <p class="trusted-label">BUILT ON DATA FROM</p>
-    <div class="trusted-logos">
-      <span>USDA</span><span>NASA</span><span>NOAA</span><span>USGS</span><span>Sentinel-2</span><span>OpenStreetMap</span>
-    </div>
-  </section>
-
-  <!-- How It Works -->
-  <section class="section" id="how-it-works">
+  <!-- ===== HOW IT WORKS ===== -->
+  <section id="how-it-works">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Simple Workflow</span>
+        <div class="section-label">Simple Workflow</div>
         <h2 class="section-title">Three steps to smarter farming</h2>
-        <p class="section-description">No expensive software. No consultants. Draw, analyze, download.</p>
+        <p class="section-subtitle">No expensive software. No consultants. Draw, analyze, download.</p>
       </div>
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-number">01</div>
-          <div class="step-icon">📍</div>
-          <h3 class="step-title">Draw Your Field</h3>
-          <p class="step-description">Use the interactive map above to draw your field boundaries. Supports GeoJSON, Shapefile, and KML uploads too.</p>
+          <div class="step-icon">&#x1F4CD;</div>
+          <h3>Draw Your Field</h3>
+          <p>Use the interactive map above to draw your field boundaries. Supports GeoJSON, Shapefile, and KML uploads too.</p>
         </div>
         <div class="step-card">
           <div class="step-number">02</div>
-          <div class="step-icon">🧠</div>
-          <h3 class="step-title">AI Analysis</h3>
-          <p class="step-description">Ask the AI about your field in natural language. Get NDVI, soil moisture, weather, and yield predictions powered by nltGIS.ai.</p>
+          <div class="step-icon">&#x1F9E0;</div>
+          <h3>AI Analysis</h3>
+          <p>Ask the AI about your field in natural language. Get NDVI, soil moisture, weather, and yield predictions powered by nltGIS.ai.</p>
         </div>
         <div class="step-card">
           <div class="step-number">03</div>
-          <div class="step-icon">🗺️</div>
-          <h3 class="step-title">Download Your Map</h3>
-          <p class="step-description">Get prescription maps for your tractor. Download in industry-standard formats ready for precision application.</p>
+          <div class="step-icon">&#x1F5FA;&#xFE0F;</div>
+          <h3>Download Your Map</h3>
+          <p>Get prescription maps for your tractor. Download in industry-standard formats ready for precision application.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Features -->
-  <section class="section section-dark" id="features">
+  <!-- ===== FEATURES ===== -->
+  <section id="features" style="background: var(--navy-800)">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Platform</span>
+        <div class="section-label">Platform</div>
         <h2 class="section-title">Powered by nltGIS.ai</h2>
-        <p class="section-description">Enterprise-grade spatial intelligence, purpose-built for agriculture.</p>
+        <p class="section-subtitle">Enterprise-grade spatial intelligence, purpose-built for agriculture.</p>
       </div>
       <div class="features-grid">
-        <div class="feature-card"><div class="feature-icon">🛰️</div><h3>Satellite Imagery</h3><p>Free Sentinel-2 and Landsat imagery for NDVI, crop health monitoring, and change detection.</p></div>
-        <div class="feature-card"><div class="feature-icon">🧠</div><h3>AI Spatial Engine</h3><p>Natural language queries across 200+ data sources. Ask in plain English, get maps and intelligence.</p></div>
-        <div class="feature-card"><div class="feature-icon">🌐</div><h3>Interoperable</h3><p>OGC standards, GeoJSON, Shapefile, GeoTIFF. Works with John Deere, Case IH, Trimble, and all platforms.</p></div>
-        <div class="feature-card"><div class="feature-icon">⚡</div><h3>API-First</h3><p>REST, GraphQL, Python/JS SDKs, WebSocket streaming. Built for developers.</p></div>
-        <div class="feature-card"><div class="feature-icon">🔒</div><h3>Federal Security</h3><p>SOC 2 Type II, FedRAMP pathway, CMMC Level 2, GovCloud ready. NIST 800-53 compliant.</p></div>
-        <div class="feature-card"><div class="feature-icon">☁️</div><h3>Cloud-Native</h3><p>Serverless cloud infrastructure. Auto-scaling, multi-region, global edge delivery.</p></div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F6F0;&#xFE0F;</div>
+          <h3>Satellite Imagery</h3>
+          <p>Free Sentinel-2 and Landsat imagery for NDVI, crop health monitoring, and change detection.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F9E0;</div>
+          <h3>AI Spatial Engine</h3>
+          <p>Natural language queries across 200+ data sources. Ask in plain English, get maps and intelligence.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F310;</div>
+          <h3>Interoperable</h3>
+          <p>OGC standards, GeoJSON, Shapefile, GeoTIFF. Works with John Deere, Case IH, Trimble, and all platforms.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x26A1;</div>
+          <h3>API-First</h3>
+          <p>REST, GraphQL, Python/JS SDKs, WebSocket streaming. Built for developers.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F512;</div>
+          <h3>Federal Security</h3>
+          <p>SOC 2 Type II, FedRAMP pathway, CMMC Level 2, GovCloud ready. NIST 800-53 compliant.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x2601;&#xFE0F;</div>
+          <h3>Cloud-Native</h3>
+          <p>Serverless cloud infrastructure. Auto-scaling, multi-region, global edge delivery.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Tools -->
-  <section class="section" id="tools">
+  <!-- ===== TOOLS ===== -->
+  <section id="tools">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Analysis Tools</span>
+        <div class="section-label">Analysis Tools</div>
         <h2 class="section-title">Precision tools for every need</h2>
-        <p class="section-description">Available now and coming soon — all powered by nltGIS.ai.</p>
+        <p class="section-subtitle">Available now and coming soon &mdash; all powered by nltGIS.ai.</p>
       </div>
       <div class="tools-grid">
-        <div class="tool-card tool-available"><div class="tool-status available">Available Now</div><div class="tool-icon">🌱</div><h3>NDVI Crop Health</h3><p>Satellite-based vegetation index mapping to monitor crop health and identify problem areas.</p></div>
-        <div class="tool-card tool-coming"><div class="tool-status coming">Coming Soon</div><div class="tool-icon">🌾</div><h3>Seeding Rate Rx</h3><p>Variable-rate seeding prescriptions based on soil productivity zones.</p></div>
-        <div class="tool-card tool-coming"><div class="tool-status coming">Coming Soon</div><div class="tool-icon">📅</div><h3>Planting Date Optimizer</h3><p>AI planting date recommendations using weather and soil data.</p></div>
-        <div class="tool-card tool-coming"><div class="tool-status coming">Coming Soon</div><div class="tool-icon">🧪</div><h3>Fungicide Wheat Rx</h3><p>Targeted fungicide maps based on disease risk models.</p></div>
-        <div class="tool-card tool-coming"><div class="tool-status coming">Coming Soon</div><div class="tool-icon">💧</div><h3>Irrigation Management</h3><p>Smart scheduling using soil moisture and evapotranspiration models.</p></div>
-        <div class="tool-card tool-coming"><div class="tool-status coming">Coming Soon</div><div class="tool-icon">📊</div><h3>Yield Forecasting</h3><p>ML yield predictions from satellite imagery and crop growth models.</p></div>
+        <div class="tool-card">
+          <span class="tool-status available">Available Now</span>
+          <div class="tool-icon">&#x1F331;</div>
+          <h3>NDVI Crop Health</h3>
+          <p>Satellite-based vegetation index mapping to monitor crop health and identify problem areas.</p>
+        </div>
+        <div class="tool-card">
+          <span class="tool-status coming">Coming Soon</span>
+          <div class="tool-icon">&#x1F33E;</div>
+          <h3>Seeding Rate Rx</h3>
+          <p>Variable-rate seeding prescriptions based on soil productivity zones.</p>
+        </div>
+        <div class="tool-card">
+          <span class="tool-status coming">Coming Soon</span>
+          <div class="tool-icon">&#x1F4C5;</div>
+          <h3>Planting Date Optimizer</h3>
+          <p>AI planting date recommendations using weather and soil data.</p>
+        </div>
+        <div class="tool-card">
+          <span class="tool-status coming">Coming Soon</span>
+          <div class="tool-icon">&#x1F9EA;</div>
+          <h3>Fungicide Wheat Rx</h3>
+          <p>Targeted fungicide maps based on disease risk models.</p>
+        </div>
+        <div class="tool-card">
+          <span class="tool-status coming">Coming Soon</span>
+          <div class="tool-icon">&#x1F4A7;</div>
+          <h3>Irrigation Management</h3>
+          <p>Smart scheduling using soil moisture and evapotranspiration models.</p>
+        </div>
+        <div class="tool-card">
+          <span class="tool-status coming">Coming Soon</span>
+          <div class="tool-icon">&#x1F4CA;</div>
+          <h3>Yield Forecasting</h3>
+          <p>ML yield predictions from satellite imagery and crop growth models.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Technology -->
-  <section class="section section-dark" id="technology">
+  <!-- ===== TECHNOLOGY ===== -->
+  <section id="technology" style="background: var(--navy-800)">
     <div class="container">
+      <div class="section-header">
+        <div class="section-label">Technology</div>
+        <h2 class="section-title">Built on nltGIS.ai</h2>
+        <p class="section-subtitle">PAGAF is powered by the nltGIS.ai platform &mdash; the same AI-native spatial intelligence engine trusted by FEMA, NASA, Census, DHS, and the U.S. Air Force for over 25 years.</p>
+      </div>
       <div class="tech-layout">
-        <div class="tech-content">
-          <span class="section-tag">Technology</span>
-          <h2 class="section-title">Built on nltGIS.ai</h2>
-          <p class="tech-description">PAGAF is powered by the nltGIS.ai platform — the same AI-native spatial intelligence engine trusted by FEMA, NASA, Census, DHS, and the U.S. Air Force for over 25 years.</p>
-          <div class="tech-principles">
-            <div class="principle"><div class="principle-icon">🏛️</div><div><h4>200+ Government Data Sources</h4><p>USDA, NASA, NOAA, USGS, Sentinel-2, Census, and more.</p></div></div>
-            <div class="principle"><div class="principle-icon">🔐</div><div><h4>Federal Security Standards</h4><p>SOC 2 Type II, FedRAMP pathway, CMMC Level 2.</p></div></div>
-            <div class="principle"><div class="principle-icon">🧠</div><div><h4>AI Spatial Engine</h4><p>Natural language queries that return maps and intelligence.</p></div></div>
-            <div class="principle"><div class="principle-icon">🌐</div><div><h4>OGC Interoperable</h4><p>STAC, COG, GeoParquet, WMS/WFS — your data works here.</p></div></div>
+        <div class="tech-features">
+          <div class="tech-feature">
+            <span class="tech-feature-icon">&#x1F3DB;&#xFE0F;</span>
+            <div>
+              <h4>200+ Government Data Sources</h4>
+              <p>USDA, NASA, NOAA, USGS, Sentinel-2, Census, and more.</p>
+            </div>
           </div>
-          <a href="https://nltgis.ai" target="_blank" class="btn btn-primary">
-            Explore nltGIS.ai Platform →
-          </a>
+          <div class="tech-feature">
+            <span class="tech-feature-icon">&#x1F510;</span>
+            <div>
+              <h4>Federal Security Standards</h4>
+              <p>SOC 2 Type II, FedRAMP pathway, CMMC Level 2.</p>
+            </div>
+          </div>
+          <div class="tech-feature">
+            <span class="tech-feature-icon">&#x1F9E0;</span>
+            <div>
+              <h4>AI Spatial Engine</h4>
+              <p>Natural language queries that return maps and intelligence.</p>
+            </div>
+          </div>
+          <div class="tech-feature">
+            <span class="tech-feature-icon">&#x1F310;</span>
+            <div>
+              <h4>OGC Interoperable</h4>
+              <p>STAC, COG, GeoParquet, WMS/WFS &mdash; your data works here.</p>
+            </div>
+          </div>
+          <a href="https://nltgis.ai" target="_blank" class="tech-link">Explore nltGIS.ai Platform &rarr;</a>
         </div>
-        <div class="tech-code">
-          <div class="code-window">
-            <div class="code-chrome"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-filename">example.py</span></div>
-            <pre class="code-body"><code><span class="code-keyword">from</span> nltgis <span class="code-keyword">import</span> Client
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <div class="code-block-dots">
+              <span class="dot-red"></span><span class="dot-yellow"></span><span class="dot-green"></span>
+            </div>
+            <span>example.py</span>
+          </div>
+          <div class="code-block">
+            <pre><span class="code-keyword">from</span> nltgis <span class="code-keyword">import</span> Client
 
 <span class="code-comment"># Connect to nltGIS.ai</span>
 client = Client(api_key=<span class="code-string">"your-key"</span>)
 
 <span class="code-comment"># Ask about your field</span>
-result = client.ask(
+result = client.<span class="code-func">ask</span>(
     <span class="code-string">"NDVI analysis for my corn field"</span>,
     geojson=<span class="code-string">"my_field.geojson"</span>
 )
 
 <span class="code-comment"># Get results</span>
-result.to_map()       <span class="code-comment"># Interactive map</span>
-result.to_geojson()   <span class="code-comment"># GeoJSON</span>
-result.to_geotiff()   <span class="code-comment"># Prescription map</span></code></pre>
+result.<span class="code-func">to_map</span>()      <span class="code-comment"># Interactive map</span>
+result.<span class="code-func">to_geojson</span>()  <span class="code-comment"># GeoJSON</span>
+result.<span class="code-func">to_geotiff</span>()  <span class="code-comment"># Prescription map</span></pre>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- About -->
-  <section class="section" id="about">
+  <!-- ===== ABOUT / MISSION ===== -->
+  <section id="about">
     <div class="container">
+      <div class="section-header">
+        <div class="section-label">Our Mission</div>
+        <h2 class="section-title">Why we do what we do</h2>
+      </div>
       <div class="mission-layout">
-        <div class="mission-content">
-          <span class="section-tag">Our Mission</span>
-          <h2 class="section-title">Why we do what we do</h2>
-          <p class="mission-text">Facing global climate change, economic uncertainties, and a growing population, technology is essential to secure our food supplies.</p>
-          <p class="mission-text">Precision agriculture is proven but barriers remain: cost, complexity, vendor lock-in. <strong>PAGAF makes precision agriculture available to any farmer, at no cost.</strong></p>
-          <div class="mission-values">
-            <div class="value"><div class="value-number">$0</div><div class="value-label">Cost to farmers</div></div>
-            <div class="value"><div class="value-number">25+</div><div class="value-label">Years NLT delivery</div></div>
-            <div class="value"><div class="value-number">50+</div><div class="value-label">Federal partners</div></div>
-          </div>
+        <div class="mission-text">
+          <p>Facing global climate change, economic uncertainties, and a growing population, technology is essential to secure our food supplies.</p>
+          <p>Precision agriculture is proven but barriers remain: cost, complexity, vendor lock-in. PAGAF makes precision agriculture available to any farmer, at no cost.</p>
+          <a href="https://nltgis.ai" target="_blank" class="mission-link">Meet the Team &rarr;</a>
         </div>
-        <div class="mission-team">
-          <div class="team-card">
-            <h3>Meet the Team</h3>
-            <p>Built by New Light Technologies (NLT), serving federal agencies for over 25 years.</p>
-            <a href="https://newlighttechnologies.com/about/staff" target="_blank" class="btn btn-outline btn-sm">Meet the Team →</a>
+        <div class="mission-stats">
+          <div class="mission-stat">
+            <div class="stat-value">$0</div>
+            <div class="stat-label">Cost to farmers</div>
           </div>
-          <div class="powered-by">
-            <span>Powered by</span>
-            <a href="https://nltgis.ai" target="_blank" class="nlt-logo"><span class="nltgis-badge">nG</span> <strong>nltGIS.ai</strong></a>
+          <div class="mission-stat">
+            <div class="stat-value">25+</div>
+            <div class="stat-label">Years NLT delivery</div>
+          </div>
+          <div class="mission-stat">
+            <div class="stat-value">50+</div>
+            <div class="stat-label">Federal partners</div>
+          </div>
+          <div class="mission-stat">
+            <div class="stat-value">200+</div>
+            <div class="stat-label">Data sources</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="section section-cta" id="get-started">
+  <!-- ===== CTA ===== -->
+  <section class="cta-section">
     <div class="container">
-      <div class="cta-content">
-        <h2 class="cta-title">Your fields deserve<br><span class="gradient-text">precision intelligence</span></h2>
-        <p class="cta-description">Powered by nltGIS.ai. Free for every farmer. Start mapping today.</p>
-        <div class="cta-actions">
-          <a href="#map-section" class="btn btn-primary btn-lg">Start Mapping Your Fields</a>
-          <a href="https://nltgis.ai" target="_blank" class="btn btn-outline btn-lg">Explore nltGIS.ai</a>
-        </div>
-        <p class="cta-note">Part of the <a href="https://nltgis.ai">nltGIS.ai</a> platform. Launching Earth Day 2026.</p>
+      <h2>Your fields deserve<br><span class="gradient-text">precision intelligence</span></h2>
+      <p>Powered by nltGIS.ai. Free for every farmer. Start mapping today.</p>
+      <div class="cta-buttons">
+        <a href="#map-section" class="btn-primary">Start Mapping Your Fields</a>
+        <a href="https://nltgis.ai" target="_blank" class="btn-secondary">Explore nltGIS.ai</a>
       </div>
+      <p class="cta-note">Part of the nltGIS.ai platform. Launching Earth Day 2026.</p>
     </div>
   </section>
 
-  <!-- Footer -->
+  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="footer-logo"><span class="logo-icon">🌿</span><span class="logo-text">PAGAF</span></div>
-          <p class="footer-tagline">Precision AG for All Farmers.<br>Powered by nltGIS.ai.</p>
-          <a href="mailto:pagaf@nltgis.com" class="footer-email">pagaf@nltgis.com</a>
-          <div class="footer-social">
-            <a href="https://github.com/precisionAGTech/pagaf" target="_blank" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></a>
-            <a href="https://www.linkedin.com/in/newlighttechnologies" target="_blank" aria-label="LinkedIn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
-          </div>
+          <a href="/" class="nav-logo">
+            <span class="logo-icon">&#x1F33F;</span>
+            <span class="logo-text">PAGAF</span>
+          </a>
+          <p>Precision AG for All Farmers.<br>Powered by nltGIS.ai.</p>
+          <p style="margin-top:8px"><a href="mailto:pagaf@nltgis.com">pagaf@nltgis.com</a></p>
         </div>
-        <div class="footer-links-group"><h4>Product</h4><a href="#map-section">Map Your Field</a><a href="#how-it-works">How It Works</a><a href="#features">Features</a><a href="#tools">Tools</a></div>
-        <div class="footer-links-group"><h4>Platform</h4><a href="https://nltgis.ai" target="_blank">nltGIS.ai</a><a href="https://newlighttechnologies.com" target="_blank">NLT</a><a href="https://newlighttechnologies.com/about/staff" target="_blank">Team</a></div>
-        <div class="footer-links-group"><h4>Support</h4><a href="mailto:pagaf@nltgis.com">Contact</a><a href="https://github.com/precisionAGTech/pagaf/issues" target="_blank">Issues</a></div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#map-section">Map Your Field</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#features">Features</a>
+          <a href="#tools">Tools</a>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="https://nltgis.ai" target="_blank">nltGIS.ai</a>
+          <a href="https://nlt.com" target="_blank">NLT</a>
+          <a href="#">Team</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="mailto:pagaf@nltgis.com">Contact</a>
+          <a href="https://github.com/precisionAGTech/pagaf/issues" target="_blank">Issues</a>
+        </div>
       </div>
       <div class="footer-bottom">
-        <span>Powered by <a href="https://nltgis.ai" target="_blank"><span class="nltgis-badge-sm">nG</span> <strong>nltGIS.ai</strong></a> · <a href="https://newlighttechnologies.com" target="_blank">NLT</a></span>
-        <span>© 2026 New Light Technologies</span>
+        <span>Powered by <a href="https://nltgis.ai" target="_blank"><strong>nltGIS.ai</strong></a> &middot; <a href="https://nlt.com" target="_blank">NLT</a></span>
+        <span>&copy; 2026 New Light Technologies</span>
       </div>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
   <script src="js/pagaf.js"></script>
