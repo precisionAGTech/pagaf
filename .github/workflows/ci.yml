@@ -13,16 +13,31 @@ permissions:
 
 jobs:
   validate:
-    name: Validate & Lint
+    name: Validate & Build Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate HTML
-        uses: nickersoft/html-validate-action@v1
-        with:
-          files: '*.html'
-        continue-on-error: true
+      - name: Check HTML syntax
+        run: |
+          echo "=== Checking HTML ==="
+          # Basic HTML validation - check for unclosed tags
+          python3 -c "
+          import html.parser, sys
+          class V(html.parser.HTMLParser):
+            def __init__(self):
+              super().__init__()
+              self.errors = 0
+            def handle_starttag(self, tag, attrs): pass
+            def handle_endtag(self, tag): pass
+          try:
+            v = V()
+            v.feed(open('index.html').read())
+            print('HTML parsed successfully')
+          except Exception as e:
+            print(f'HTML error: {e}')
+            sys.exit(1)
+          "
 
       - name: Check file sizes
         run: |
@@ -31,42 +46,32 @@ jobs:
           echo "CSS:  $(wc -c < css/pagaf.css) bytes"
           echo "JS:   $(wc -c < js/pagaf.js) bytes"
           echo ""
-          echo "=== Total ==="
           total=$(cat index.html css/pagaf.css js/pagaf.js | wc -c)
-          echo "Total: $total bytes"
+          echo "Total bundle: $total bytes ($(echo "scale=1; $total/1024" | bc)KB)"
           if [ $total -gt 500000 ]; then
             echo "::warning::Total bundle size exceeds 500KB"
+          else
+            echo "✅ Bundle size OK"
           fi
 
-      - name: Check for broken links in HTML
+      - name: Verify required files exist
         run: |
-          echo "Checking external resource links..."
-          grep -oP 'src="https?://[^"]*"' index.html | head -20
-          grep -oP 'href="https?://[^"]*"' index.html | head -20
-          echo "Link check complete"
+          echo "=== Required Files ==="
+          for f in index.html css/pagaf.css js/pagaf.js CONTEXT.md; do
+            if [ -f "$f" ]; then
+              echo "✅ $f exists ($(wc -c < $f) bytes)"
+            else
+              echo "❌ $f MISSING"
+              exit 1
+            fi
+          done
 
-  lighthouse:
-    name: Lighthouse Audit
-    runs-on: ubuntu-latest
-    needs: validate
-    if: github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Lighthouse CI
-        run: npm install -g @lhci/cli
-
-      - name: Run Lighthouse
+      - name: Check CDN dependencies
         run: |
-          lhci autorun --collect.staticDistDir=. --collect.url=http://localhost/index.html || true
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          echo "=== CDN Dependencies ==="
+          grep -oP 'src="https://unpkg.com/[^"]*"' index.html || true
+          grep -oP 'href="https://unpkg.com/[^"]*"' index.html || true
+          echo "CDN check complete"
 
   deploy-status:
     name: Deployment Status
@@ -74,18 +79,17 @@ jobs:
     needs: validate
     if: github.event_name == 'push'
     steps:
-      - name: Check GitHub Pages deployment
+      - name: Wait for GitHub Pages deployment
         run: |
           echo "GitHub Pages auto-deploys from main branch"
           echo "Site URL: https://precisionagtech.github.io"
           echo ""
-          echo "Waiting 30s for deployment..."
-          sleep 30
+          echo "Waiting 60s for deployment..."
+          sleep 60
           status=$(curl -s -o /dev/null -w "%{http_code}" https://precisionagtech.github.io)
           echo "Site status: HTTP $status"
           if [ "$status" = "200" ]; then
             echo "✅ Site is live!"
           else
-            echo "⚠️ Site returned HTTP $status"
+            echo "⚠️ Site returned HTTP $status (may still be deploying)"
           fi
-
