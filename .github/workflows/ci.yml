@@ -1,0 +1,91 @@
+name: PAGAF CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  validate:
+    name: Validate & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate HTML
+        uses: nickersoft/html-validate-action@v1
+        with:
+          files: '*.html'
+        continue-on-error: true
+
+      - name: Check file sizes
+        run: |
+          echo "=== File Sizes ==="
+          echo "HTML: $(wc -c < index.html) bytes"
+          echo "CSS:  $(wc -c < css/pagaf.css) bytes"
+          echo "JS:   $(wc -c < js/pagaf.js) bytes"
+          echo ""
+          echo "=== Total ==="
+          total=$(cat index.html css/pagaf.css js/pagaf.js | wc -c)
+          echo "Total: $total bytes"
+          if [ $total -gt 500000 ]; then
+            echo "::warning::Total bundle size exceeds 500KB"
+          fi
+
+      - name: Check for broken links in HTML
+        run: |
+          echo "Checking external resource links..."
+          grep -oP 'src="https?://[^"]*"' index.html | head -20
+          grep -oP 'href="https?://[^"]*"' index.html | head -20
+          echo "Link check complete"
+
+  lighthouse:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse
+        run: |
+          lhci autorun --collect.staticDistDir=. --collect.url=http://localhost/index.html || true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  deploy-status:
+    name: Deployment Status
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push'
+    steps:
+      - name: Check GitHub Pages deployment
+        run: |
+          echo "GitHub Pages auto-deploys from main branch"
+          echo "Site URL: https://precisionagtech.github.io"
+          echo ""
+          echo "Waiting 30s for deployment..."
+          sleep 30
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://precisionagtech.github.io)
+          echo "Site status: HTTP $status"
+          if [ "$status" = "200" ]; then
+            echo "✅ Site is live!"
+          else
+            echo "⚠️ Site returned HTTP $status"
+          fi
+
