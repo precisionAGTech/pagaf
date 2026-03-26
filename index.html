@@ -4,341 +4,473 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PAGAF — Precision AG for All Farmers | Powered by nltGIS.ai</title>
-  <meta name="description" content="Select fields on USDA NAIP imagery, draw boundaries, generate variable-rate prescriptions, and export to John Deere, Case IH, Trimble and more. Powered by nltGIS.ai.">
+  <meta name="description" content="Free precision agriculture platform. Select fields on USDA NAIP imagery, draw boundaries, generate prescriptions, and export to John Deere, Case IH, Trimble. Powered by nltGIS.ai.">
   <meta name="theme-color" content="#080d1a">
+  <meta name="keywords" content="precision agriculture, NAIP, field mapping, variable rate, GeoJSON, Shapefile, John Deere, NDVI, farm technology">
+  <link rel="canonical" href="https://precisionagtech.github.io">
+  <meta property="og:title" content="PAGAF — Precision AG for All Farmers">
+  <meta property="og:description" content="Free precision ag platform. Map fields, generate prescriptions, export to farm equipment.">
+  <meta property="og:url" content="https://precisionagtech.github.io">
+  <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="css/pagaf.css">
 </head>
 <body>
-
-<!-- ===== NAVBAR — modeled after nltGIS.ai ===== -->
-<nav class="navbar" id="navbar">
-  <div class="nav-left">
-    <a href="/" class="nav-brand">
-      <span class="brand-icon">&#x1F33E;</span>
-      <span class="brand-text">PAGAF</span>
-    </a>
-    <div class="nav-links">
-      <div class="nav-dropdown" data-dropdown="platform">
-        <button class="nav-link">Platform <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-        <div class="dropdown-panel">
-          <a href="#" class="dropdown-item" data-action="openFieldMapper">
-            <span class="di-icon">&#x1F5FA;&#xFE0F;</span>
-            <div><strong>Field Mapper</strong><p>Draw field boundaries on NAIP imagery</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-action="openPrescriptions">
-            <span class="di-icon">&#x1F9EA;</span>
-            <div><strong>Prescription Maps</strong><p>Generate variable-rate application maps</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-action="openExport">
-            <span class="di-icon">&#x1F69C;</span>
-            <div><strong>Equipment Export</strong><p>Send data to John Deere, Case IH, Trimble</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-action="openCropHealth">
-            <span class="di-icon">&#x1F331;</span>
-            <div><strong>Crop Health</strong><p>NDVI analysis from satellite imagery</p></div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <span class="di-icon">&#x1F4CA;</span>
-            <div><strong>Yield Estimator</strong><p>ML-predicted yield maps</p></div>
-          </a>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="/" class="nav-brand">
+        <span class="brand-icon">&#x1F33E;</span>
+        <span class="brand-text">PAGAF</span>
+        <span class="brand-version">v4</span>
+      </a>
+      <div class="nav-links">
+        <div class="nav-dropdown" data-dropdown="platform">
+          <button class="nav-link">Platform <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          <div class="dropdown-panel">
+            <a href="#" class="dropdown-item" data-action="openFieldMapper">
+              <span class="di-icon">&#x1F5FA;&#xFE0F;</span>
+              <div><strong>Field Mapper</strong><p>Draw field boundaries on NAIP imagery</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-action="openPrescriptions">
+              <span class="di-icon">&#x1F9EA;</span>
+              <div><strong>Prescription Maps</strong><p>Generate variable-rate application maps</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-action="openExport">
+              <span class="di-icon">&#x1F69C;</span>
+              <div><strong>Equipment Export</strong><p>Send data to John Deere, Case IH, Trimble</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-action="openCropHealth">
+              <span class="di-icon">&#x1F331;</span>
+              <div><strong>Crop Health</strong><p>NDVI analysis from satellite imagery</p></div>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item" data-action="openAbout">
+              <span class="di-icon">&#x2139;&#xFE0F;</span>
+              <div><strong>About PAGAF</strong><p>Version, credits, and data sources</p></div>
+            </a>
+          </div>
         </div>
-      </div>
-      <div class="nav-dropdown" data-dropdown="data">
-        <button class="nav-link">Data Layers <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-        <div class="dropdown-panel">
-          <a href="#" class="dropdown-item" data-layer-select="naip">
-            <span class="di-icon">&#x1F6F0;&#xFE0F;</span>
-            <div><strong>NAIP Aerial (USDA)</strong><p>High-resolution farm aerial photography</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-layer-select="satellite">
-            <span class="di-icon">&#x1F30D;</span>
-            <div><strong>Sentinel-2 Satellite</strong><p>Multispectral satellite imagery</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-layer-select="dark">
-            <span class="di-icon">&#x1F5FA;&#xFE0F;</span>
-            <div><strong>Dark Basemap</strong><p>Minimal reference map</p></div>
-          </a>
+        <div class="nav-dropdown" data-dropdown="data">
+          <button class="nav-link">Data Layers <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          <div class="dropdown-panel">
+            <a href="#" class="dropdown-item" data-layer-select="naip">
+              <span class="di-icon">&#x1F6F0;&#xFE0F;</span>
+              <div><strong>NAIP Aerial (USDA)</strong><p>High-resolution farm aerial photography</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-layer-select="satellite">
+              <span class="di-icon">&#x1F30D;</span>
+              <div><strong>Satellite (Esri)</strong><p>Global satellite imagery</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-layer-select="osm">
+              <span class="di-icon">&#x1F5FA;&#xFE0F;</span>
+              <div><strong>OpenStreetMap</strong><p>Community-maintained street map</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-layer-select="topo">
+              <span class="di-icon">&#x26F0;&#xFE0F;</span>
+              <div><strong>USGS Topo</strong><p>Topographic map with contours</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-layer-select="dark">
+              <span class="di-icon">&#x1F319;</span>
+              <div><strong>Dark Basemap</strong><p>Minimal dark reference map</p></div>
+            </a>
+          </div>
         </div>
-      </div>
-      <div class="nav-dropdown" data-dropdown="equipment">
-        <button class="nav-link">Equipment <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-        <div class="dropdown-panel">
-          <a href="#" class="dropdown-item" data-equip="johndeere">
-            <span class="di-icon equip-badge jd">JD</span>
-            <div><strong>John Deere</strong><p>Operations Center integration</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-equip="cnh">
-            <span class="di-icon equip-badge cnh">CNH</span>
-            <div><strong>Case IH / New Holland</strong><p>AFS & PLM Connect</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-equip="trimble">
-            <span class="di-icon equip-badge ag">AG</span>
-            <div><strong>Trimble / AgLeader</strong><p>Ag Software export</p></div>
-          </a>
-          <a href="#" class="dropdown-item" data-equip="isoxml">
-            <span class="di-icon equip-badge iso">ISO</span>
-            <div><strong>ISO-XML / ISOBUS</strong><p>ISO 11783 universal standard</p></div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <span class="di-icon">&#x1F4E6;</span>
-            <div><strong>GeoJSON / Shapefile / OGC</strong><p>Standard GIS export formats</p></div>
-          </a>
+        <div class="nav-dropdown" data-dropdown="equipment">
+          <button class="nav-link">Equipment <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          <div class="dropdown-panel">
+            <a href="#" class="dropdown-item" data-equip="johndeere">
+              <span class="di-icon equip-badge jd">JD</span>
+              <div><strong>John Deere</strong><p>Operations Center integration</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-equip="cnh">
+              <span class="di-icon equip-badge cnh">CNH</span>
+              <div><strong>Case IH / New Holland</strong><p>AFS &amp; PLM Connect</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-equip="trimble">
+              <span class="di-icon equip-badge ag">AG</span>
+              <div><strong>Trimble / AgLeader</strong><p>Ag Software export</p></div>
+            </a>
+            <a href="#" class="dropdown-item" data-equip="isoxml">
+              <span class="di-icon equip-badge iso">ISO</span>
+              <div><strong>ISO-XML / ISOBUS</strong><p>ISO 11783 universal standard</p></div>
+            </a>
+          </div>
         </div>
+        <a href="#" class="nav-link" data-action="openDocs">Docs</a>
       </div>
-      <a href="#" class="nav-link" id="navDocs">Docs</a>
     </div>
-  </div>
-  <div class="nav-right">
-    <div class="layer-toggle" id="layerToggle">
-      <button class="layer-btn active" data-layer="naip" title="USDA NAIP">NAIP</button>
-      <button class="layer-btn" data-layer="satellite" title="Satellite">Satellite</button>
-      <button class="layer-btn" data-layer="dark" title="Dark Map">Map</button>
-    </div>
-    <a href="https://nltgis.ai" target="_blank" rel="noopener" class="nltgis-link">
-      <span class="nlt-badge">nG</span>
-      <span class="nlt-text">nltGIS.ai</span>
-    </a>
-    <button class="nav-cta" id="getStartedBtn">Get Started</button>
-    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-
-<!-- ===== MAIN APP LAYOUT ===== -->
-<main class="app-layout" id="appLayout">
-  <!-- LEFT SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2 class="sidebar-title">Field Tools</h2>
-      <button class="sidebar-collapse" id="sidebarCollapse" title="Collapse sidebar">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <div class="nav-right">
+      <div class="layer-toggle" id="layerToggle">
+        <button class="layer-btn active" data-layer="naip" title="USDA NAIP">NAIP</button>
+        <button class="layer-btn" data-layer="satellite" title="Satellite">Satellite</button>
+        <button class="layer-btn" data-layer="osm" title="OpenStreetMap">OSM</button>
+        <button class="layer-btn" data-layer="dark" title="Dark Map">Dark</button>
+      </div>
+      <a href="https://nltgis.ai" target="_blank" rel="noopener" class="nltgis-link">
+        <span class="nlt-badge">nG</span>
+        <span class="nlt-text">nltGIS.ai</span>
+      </a>
+      <button class="nav-cta" id="getStartedBtn">Get Started</button>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
       </button>
     </div>
-    <div class="sidebar-inner">
-      <!-- Step 1 -->
-      <div class="workflow-step active" id="step1" data-step="1">
-        <div class="step-header">
-          <div class="step-num">1</div>
-          <div class="step-info"><h3>Find Your Field</h3><p>Search or zoom to farmland on NAIP imagery</p></div>
-          <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <div class="step-body">
-          <div class="search-box">
-            <svg class="search-svg" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <input type="text" id="locationSearch" placeholder="Search address, county, or coordinates..." class="search-input" autocomplete="off">
-            <kbd class="search-kbd">Enter</kbd>
-          </div>
-          <div class="quick-nav">
-            <button class="quick-btn" data-loc="-93.6,42.0,13">Iowa Corn Belt</button>
-            <button class="quick-btn" data-loc="-97.5,37.7,12">Kansas Wheat</button>
-            <button class="quick-btn" data-loc="-89.4,40.1,13">Illinois Soy</button>
-            <button class="quick-btn" data-loc="-100.4,46.8,12">North Dakota</button>
-          </div>
-          <div class="step-hint">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 6V10M7 4.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <span>Zoom in to see individual fields on NAIP aerial photos from USDA</span>
-          </div>
-        </div>
+  </nav>
+  <!-- ===== MAIN APP LAYOUT ===== -->
+  <main class="app-layout" id="appLayout">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Field Tools</h2>
+        <button class="sidebar-collapse" id="sidebarCollapse" title="Collapse sidebar (S)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
       </div>
-      <!-- Step 2 -->
-      <div class="workflow-step" id="step2" data-step="2">
-        <div class="step-header">
-          <div class="step-num">2</div>
-          <div class="step-info"><h3>Draw Field Boundaries</h3><p>Outline one or more fields on the imagery</p></div>
-          <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <div class="step-body">
-          <div class="draw-tools">
-            <button class="tool-btn primary" id="drawPolygon">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="8,1 14,5 12,13 4,13 2,5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
-              <span>Draw Field</span>
-            </button>
-            <button class="tool-btn" id="drawRect">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
-              <span>Rectangle</span>
-            </button>
-            <button class="tool-btn" id="uploadField">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2V10M5 5L8 2L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12V13A1 1 0 003 14H13A1 1 0 0014 13V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span>Upload</span>
-            </button>
-            <button class="tool-btn danger" id="clearDraw">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span>Clear All</span>
-            </button>
+      <div class="sidebar-inner">
+        <!-- Step 1: Find -->
+        <div class="workflow-step active" id="step1" data-step="1">
+          <div class="step-header">
+            <div class="step-num">1</div>
+            <div class="step-info"><h3>Find Your Field</h3><p>Search or zoom to farmland on NAIP imagery</p></div>
+            <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
-          <div id="fieldsList" class="fields-list">
-            <div class="fields-empty">
-              <p>No fields drawn yet</p>
-              <span>Click "Draw Field" then click on the map</span>
+          <div class="step-body">
+            <div class="search-box">
+              <svg class="search-svg" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <input type="text" id="locationSearch" placeholder="Search address, county, or lat,lng..." class="search-input" autocomplete="off">
+              <kbd class="search-kbd">Enter</kbd>
+            </div>
+            <div class="quick-nav">
+              <button class="quick-btn" data-loc="-93.6,42.0,13">Iowa Corn Belt</button>
+              <button class="quick-btn" data-loc="-97.5,37.7,12">Kansas Wheat</button>
+              <button class="quick-btn" data-loc="-89.4,40.1,13">Illinois Soy</button>
+              <button class="quick-btn" data-loc="-100.4,46.8,12">N. Dakota</button>
+              <button class="quick-btn" data-loc="-119.5,36.7,12">CA Central Valley</button>
+              <button class="quick-btn" data-loc="-96.7,32.9,12">Texas Cotton</button>
+            </div>
+            <div class="step-hint">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 6V10M7 4.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span>Zoom in to see individual fields on NAIP aerial photos. You can also paste lat,lng coordinates.</span>
             </div>
           </div>
-          <div class="step-hint">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 6V10M7 4.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <span>Click corners on the map, double-click to finish. Or upload GeoJSON, Shapefile, or KML.</span>
+        </div>
+
+        <!-- Step 2: Draw -->
+        <div class="workflow-step" id="step2" data-step="2">
+          <div class="step-header">
+            <div class="step-num">2</div>
+            <div class="step-info"><h3>Draw Field Boundaries</h3><p>Outline one or more fields on the imagery</p></div>
+            <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
-        </div>
-      </div>
-      <!-- Step 3 -->
-      <div class="workflow-step" id="step3" data-step="3">
-        <div class="step-header">
-          <div class="step-num">3</div>
-          <div class="step-info"><h3>Choose Application</h3><p>Select what you need for your fields</p></div>
-          <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <div class="step-body">
-          <div class="app-grid">
-            <button class="app-card" data-app="ndvi"><span class="app-icon">&#x1F331;</span><strong>Crop Health (NDVI)</strong><span class="app-desc">Vegetation index from Sentinel-2</span></button>
-            <button class="app-card" data-app="seeding"><span class="app-icon">&#x1F33E;</span><strong>Seeding Rate Rx</strong><span class="app-desc">Variable-rate seeding prescription</span></button>
-            <button class="app-card" data-app="fertilizer"><span class="app-icon">&#x1F9EA;</span><strong>Fertilizer Rx</strong><span class="app-desc">Nitrogen / phosphorus map</span></button>
-            <button class="app-card" data-app="pesticide"><span class="app-icon">&#x1F41B;</span><strong>Pest / Weed Map</strong><span class="app-desc">Targeted spray zones</span></button>
-            <button class="app-card" data-app="fungicide"><span class="app-icon">&#x1F344;</span><strong>Fungicide Rx</strong><span class="app-desc">Disease risk application</span></button>
-            <button class="app-card" data-app="yield"><span class="app-icon">&#x1F4CA;</span><strong>Yield Estimate</strong><span class="app-desc">ML-predicted yield map</span></button>
-          </div>
-        </div>
-      </div>
-      <!-- Step 4 -->
-      <div class="workflow-step" id="step4" data-step="4">
-        <div class="step-header">
-          <div class="step-num">4</div>
-          <div class="step-info"><h3>Export for Equipment</h3><p>Download or send to your farm equipment</p></div>
-          <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
-        <div class="step-body">
-          <div class="export-section">
-            <h4 class="export-label">Standard Formats</h4>
-            <div class="export-grid">
-              <button class="export-btn" data-fmt="geojson"><span class="fmt-icon">{ }</span><strong>GeoJSON</strong><span>Web / API</span></button>
-              <button class="export-btn" data-fmt="shapefile"><span class="fmt-icon">.shp</span><strong>Shapefile</strong><span>Desktop GIS</span></button>
-              <button class="export-btn" data-fmt="geotiff"><span class="fmt-icon">.tif</span><strong>GeoTIFF</strong><span>Raster / OGC</span></button>
-              <button class="export-btn" data-fmt="geopackage"><span class="fmt-icon">.gpkg</span><strong>GeoPackage</strong><span>OGC Standard</span></button>
+          <div class="step-body">
+            <div class="draw-tools">
+              <button class="tool-btn primary" id="drawPolygon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="8,1 14,5 12,13 4,13 2,5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <span>Draw Field</span>
+              </button>
+              <button class="tool-btn" id="drawRect">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+                <span>Rectangle</span>
+              </button>
+              <button class="tool-btn" id="uploadField">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2V10M5 5L8 2L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12V13A1 1 0 003 14H13A1 1 0 0014 13V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Upload</span>
+              </button>
+              <button class="tool-btn danger" id="clearDraw">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span>Clear All</span>
+              </button>
+            </div>
+            <input type="file" id="fileUploadInput" multiple accept=".geojson,.json,.kml,.zip,.shp" class="hidden-input">
+            <div id="fieldsList" class="fields-list">
+              <div class="fields-empty"><p>No fields drawn yet</p><span>Click "Draw Field" or drag &amp; drop a GeoJSON/KML file</span></div>
+            </div>
+            <div class="step-hint">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 6V10M7 4.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span>Supports GeoJSON, KML, and Shapefile (ZIP). Drag &amp; drop files onto the map.</span>
             </div>
           </div>
-          <div class="export-section">
-            <h4 class="export-label">Farm Equipment Connectors</h4>
-            <div class="export-grid">
-              <button class="export-btn equip" data-fmt="isoxml"><span class="fmt-icon equip-icon">ISO</span><strong>ISO-XML</strong><span>ISOBUS / ISO 11783</span></button>
-              <button class="export-btn equip" data-fmt="johndeere"><span class="fmt-icon equip-icon jd">JD</span><strong>John Deere</strong><span>Operations Center</span></button>
-              <button class="export-btn equip" data-fmt="cnh"><span class="fmt-icon equip-icon cnh">CNH</span><strong>Case IH / NH</strong><span>AFS / PLM Connect</span></button>
-              <button class="export-btn equip" data-fmt="trimble"><span class="fmt-icon equip-icon ag">AG</span><strong>Trimble / AgLeader</strong><span>Ag Software</span></button>
+        </div>
+
+        <!-- Step 3: Application -->
+        <div class="workflow-step" id="step3" data-step="3">
+          <div class="step-header">
+            <div class="step-num">3</div>
+            <div class="step-info"><h3>Choose Application</h3><p>Select what you need for your fields</p></div>
+            <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="step-body">
+            <div class="app-grid">
+              <button class="app-card" data-app="ndvi"><span class="app-icon">&#x1F331;</span><strong>Crop Health (NDVI)</strong><span class="app-desc">Vegetation index analysis</span></button>
+              <button class="app-card" data-app="seeding"><span class="app-icon">&#x1F33E;</span><strong>Seeding Rate Rx</strong><span class="app-desc">Variable-rate seeding</span></button>
+              <button class="app-card" data-app="fertilizer"><span class="app-icon">&#x1F9EA;</span><strong>Fertilizer Rx</strong><span class="app-desc">N / P / K application</span></button>
+              <button class="app-card" data-app="pesticide"><span class="app-icon">&#x1F41B;</span><strong>Pest / Weed Map</strong><span class="app-desc">Targeted spray zones</span></button>
+              <button class="app-card" data-app="fungicide"><span class="app-icon">&#x1F344;</span><strong>Fungicide Rx</strong><span class="app-desc">Disease risk zones</span></button>
+              <button class="app-card" data-app="yield"><span class="app-icon">&#x1F4CA;</span><strong>Yield Estimate</strong><span class="app-desc">Predicted yield map</span></button>
             </div>
           </div>
-          <div class="step-hint success">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 7L6.5 9L10 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>All exports are OGC-compliant. Equipment formats use open AgTech standards (ADAPT, ISO 11783).</span>
+        </div>
+
+        <!-- Step 4: Export -->
+        <div class="workflow-step" id="step4" data-step="4">
+          <div class="step-header">
+            <div class="step-num">4</div>
+            <div class="step-info"><h3>Export for Equipment</h3><p>Download or send to your farm equipment</p></div>
+            <svg class="step-chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="step-body">
+            <div class="export-section">
+              <h4 class="export-label">Standard Formats</h4>
+              <div class="export-grid">
+                <button class="export-btn" data-fmt="geojson"><span class="fmt-icon">{ }</span><strong>GeoJSON</strong><span>Web / API</span></button>
+                <button class="export-btn" data-fmt="kml"><span class="fmt-icon">.kml</span><strong>KML</strong><span>Google Earth</span></button>
+                <button class="export-btn" data-fmt="csv"><span class="fmt-icon">.csv</span><strong>CSV</strong><span>Spreadsheet</span></button>
+                <button class="export-btn" data-fmt="shapefile"><span class="fmt-icon">.shp</span><strong>Shapefile</strong><span>Desktop GIS</span></button>
+              </div>
+            </div>
+            <div class="export-section">
+              <h4 class="export-label">Farm Equipment</h4>
+              <div class="export-grid">
+                <button class="export-btn equip" data-fmt="isoxml"><span class="fmt-icon equip-icon iso">ISO</span><strong>ISO-XML</strong><span>ISOBUS</span></button>
+                <button class="export-btn equip" data-fmt="johndeere"><span class="fmt-icon equip-icon jd">JD</span><strong>John Deere</strong><span>Ops Center</span></button>
+                <button class="export-btn equip" data-fmt="cnh"><span class="fmt-icon equip-icon cnh">CNH</span><strong>Case IH</strong><span>AFS / PLM</span></button>
+                <button class="export-btn equip" data-fmt="trimble"><span class="fmt-icon equip-icon ag">AG</span><strong>Trimble</strong><span>AgLeader</span></button>
+              </div>
+            </div>
+            <div class="step-hint success">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 7L6.5 9L10 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>GeoJSON, KML, CSV, and ISO-XML export fully functional. Shapefile via shpwrite.</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="sidebar-footer">
-      <a href="https://nltgis.ai" target="_blank" rel="noopener" class="powered-by">Powered by <strong>nltGIS.ai</strong></a>
-      <span class="sep">&middot;</span><span>NAIP via USDA</span><span class="sep">&middot;</span><span>Sentinel-2 via ESA</span>
-    </div>
-  </aside>
-
-  <!-- MAP AREA -->
-  <div class="map-area" id="mapArea">
-    <div id="map" class="main-map"></div>
-    <!-- Floating map toolbar -->
-    <div class="map-toolbar" id="mapToolbar">
-      <button class="map-tool" id="mapToolDraw" title="Draw field polygon (D)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polygon points="9,2 16,6 14,15 4,15 2,6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
-      </button>
-      <button class="map-tool" id="mapToolRect" title="Draw rectangle (R)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="4" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
-      </button>
-      <div class="map-tool-divider"></div>
-      <button class="map-tool" id="mapToolMeasure" title="Measure distance">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 15L15 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 15L3 11M3 15L7 15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      </button>
-      <button class="map-tool" id="mapToolZoomField" title="Zoom to fields (F)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M7 9H11M9 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
-      <div class="map-tool-divider"></div>
-      <button class="map-tool" id="mapToolFullscreen" title="Toggle sidebar (S)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 7V3H7M11 3H15V7M15 11V15H11M7 15H3V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-    <!-- Map context hint -->
-    <div class="map-hint hidden" id="mapHint">
-      <span class="map-hint-text" id="mapHintText">Click on the map to place field corners. Double-click to finish.</span>
-      <button class="map-hint-close" id="mapHintClose">&times;</button>
-    </div>
-    <!-- Map Status Bar -->
-    <div class="map-status" id="mapStatus">
-      <div class="status-left">
-        <span class="status-layer" id="statusLayer">NAIP Imagery (USDA)</span>
-        <span class="status-sep">|</span>
-        <span id="statusCoords">---, ---</span>
-        <span class="status-sep">|</span>
-        <span id="statusZoom">Zoom: 4</span>
+      <div class="sidebar-footer">
+        <a href="https://nltgis.ai" target="_blank" rel="noopener" class="powered-by">Powered by <strong>nltGIS.ai</strong></a>
+        <span class="sep">&middot;</span><span>NAIP via USDA</span><span class="sep">&middot;</span><span>OSM</span>
       </div>
-      <div class="status-right">
-        <span id="statusFields">0 fields</span>
-        <span class="status-sep">|</span>
-        <span id="statusAcres">0 acres</span>
+    </aside>
+    <!-- MAP AREA -->
+    <div class="map-area" id="mapArea">
+      <div id="map" class="main-map"></div>
+
+      <!-- Floating map toolbar -->
+      <div class="map-toolbar" id="mapToolbar">
+        <button class="map-tool" id="mapToolDraw" title="Draw field polygon (D)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polygon points="9,2 16,6 14,15 4,15 2,6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <button class="map-tool" id="mapToolRect" title="Draw rectangle (R)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="4" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <div class="map-tool-divider"></div>
+        <button class="map-tool" id="mapToolMeasure" title="Measure distance (M)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 15L15 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 15L3 11M3 15L7 15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="map-tool" id="mapToolZoomField" title="Zoom to fields (F)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M7 9H11M9 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="map-tool" id="mapToolUndo" title="Undo (Ctrl+Z)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 8L2 5L5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 5H12C14.2091 5 16 6.79086 16 9C16 11.2091 14.2091 13 12 13H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="map-tool" id="mapToolLayers" title="Data layers (L)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2L16 6L9 10L2 6Z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M2 10L9 14L16 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <div class="map-tool-divider"></div>
+        <button class="map-tool" id="mapToolFullscreen" title="Toggle sidebar (S)">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 7V3H7M11 3H15V7M15 11V15H11M7 15H3V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <!-- Data Layer Panel -->
+      <div class="data-layer-panel" id="dataLayerPanel">
+        <div class="dlp-header">
+          <h3>Data Overlays</h3>
+          <button class="dlp-close" id="dataLayerClose">&times;</button>
+        </div>
+        <div class="dlp-body">
+          <label class="dlp-item"><input type="checkbox" data-overlay="ssurgo"><span class="dlp-swatch" style="background:#c9a864"></span>SSURGO Soils (USDA)</label>
+          <label class="dlp-item"><input type="checkbox" data-overlay="cdl"><span class="dlp-swatch" style="background:#4ade80"></span>Cropland Data Layer (NASS)</label>
+          <label class="dlp-item"><input type="checkbox" data-overlay="wetlands"><span class="dlp-swatch" style="background:#60a5fa"></span>NWI Wetlands (FWS)</label>
+        </div>
+        <p class="dlp-note">Overlays use WMS from federal data sources. Performance varies by zoom level.</p>
+      </div>
+
+      <!-- Field Properties Panel -->
+      <div class="field-props-panel" id="fieldPropsPanel">
+        <div class="fpp-header">
+          <h3>Field Properties</h3>
+          <button class="fpp-close" id="fieldPropsClose">&times;</button>
+        </div>
+        <div class="fpp-body">
+          <label class="fpp-label">Name</label>
+          <input type="text" id="fieldNameInput" class="fpp-input" placeholder="Field name...">
+          <div class="fpp-stats">
+            <div class="fpp-stat"><span class="fpp-stat-label">Area</span><span class="fpp-stat-value" id="fieldPropsAcres">—</span></div>
+            <div class="fpp-stat"><span class="fpp-stat-label">Perimeter</span><span class="fpp-stat-value" id="fieldPropsPerimeter">—</span></div>
+            <div class="fpp-stat"><span class="fpp-stat-label">Centroid</span><span class="fpp-stat-value" id="fieldPropsCentroid">—</span></div>
+            <div class="fpp-stat"><span class="fpp-stat-label">Source</span><span class="fpp-stat-value" id="fieldPropsSource">—</span></div>
+          </div>
+          <div class="fpp-actions">
+            <button class="fpp-btn save" id="fieldPropsSave">Save Changes</button>
+            <button class="fpp-btn delete" id="fieldPropsDelete">Delete Field</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map hint -->
+      <div class="map-hint hidden" id="mapHint">
+        <span class="map-hint-text" id="mapHintText">Click on the map to place field corners. Double-click to finish.</span>
+        <button class="map-hint-close" id="mapHintClose">&times;</button>
+      </div>
+
+      <!-- Map Status Bar -->
+      <div class="map-status" id="mapStatus">
+        <div class="status-left">
+          <span class="status-layer" id="statusLayer">NAIP Imagery (USDA)</span>
+          <span class="status-sep">|</span>
+          <span id="statusCoords">—, —</span>
+          <span class="status-sep">|</span>
+          <span id="statusZoom">Zoom: 4</span>
+        </div>
+        <div class="status-right">
+          <span id="statusFields">0 fields</span>
+          <span class="status-sep">|</span>
+          <span id="statusAcres">0.0 acres</span>
+        </div>
+      </div>
+
+      <!-- Results Panel -->
+      <div class="results-panel" id="resultsPanel">
+        <div class="results-header"><span>Analysis Results</span><button class="results-close" id="resultsClose">&times;</button></div>
+        <div class="results-body" id="resultsBody"></div>
+        <div class="results-footer"><button class="results-export-btn" id="resultsExportBtn">&#x1F4E5; Export Results</button></div>
+      </div>
+
+      <!-- Docs Panel -->
+      <div class="docs-panel" id="docsPanel">
+        <div class="docs-header"><h3>Documentation</h3><button class="docs-close" id="docsClose">&times;</button></div>
+        <div class="docs-body">
+          <div class="docs-section">
+            <h4>Getting Started</h4>
+            <p>1. <strong>Find your field</strong> — Search by address, county, or paste coordinates (lat, lng).</p>
+            <p>2. <strong>Draw boundaries</strong> — Click corners on the map. Double-click to finish. Or upload GeoJSON/KML/Shapefile.</p>
+            <p>3. <strong>Choose an application</strong> — Select NDVI, seeding, fertilizer, pest, fungicide, or yield analysis.</p>
+            <p>4. <strong>Export</strong> — Download as GeoJSON, KML, CSV, ISO-XML, or Shapefile.</p>
+          </div>
+          <div class="docs-section">
+            <h4>Keyboard Shortcuts</h4>
+            <p><kbd>D</kbd> Draw polygon &nbsp; <kbd>R</kbd> Rectangle &nbsp; <kbd>M</kbd> Measure &nbsp; <kbd>Esc</kbd> Cancel</p>
+            <p><kbd>F</kbd> Zoom to fields &nbsp; <kbd>S</kbd> Toggle sidebar &nbsp; <kbd>L</kbd> Data layers</p>
+            <p><kbd>Ctrl+Z</kbd> Undo &nbsp; <kbd>Ctrl+Y</kbd> Redo &nbsp; <kbd>Del</kbd> Delete selected field</p>
+            <p><kbd>/</kbd> Focus search &nbsp; <kbd>?</kbd> Shortcuts modal &nbsp; <kbd>1-4</kbd> Jump to step</p>
+          </div>
+          <div class="docs-section">
+            <h4>File Upload</h4>
+            <p>Drag and drop files onto the map, or click the Upload button. Supported formats: GeoJSON, KML, Shapefile (ZIP).</p>
+          </div>
+          <div class="docs-section">
+            <h4>Data Sources</h4>
+            <p><strong>NAIP</strong> — USDA National Agriculture Imagery Program, 1m resolution aerial photos.</p>
+            <p><strong>SSURGO</strong> — USDA Soil Survey Geographic Database via WMS.</p>
+            <p><strong>CDL</strong> — USDA Cropland Data Layer from NASS.</p>
+            <p><strong>Basemaps</strong> — OpenStreetMap, Esri World Imagery, USGS Topo, CARTO Dark Matter.</p>
+          </div>
+          <div class="docs-section">
+            <h4>Export Formats</h4>
+            <p><strong>GeoJSON</strong> — Standard web GIS format. Works with all modern tools.</p>
+            <p><strong>KML</strong> — Google Earth / Google Maps compatible.</p>
+            <p><strong>CSV</strong> — Spreadsheet with field name, acres, perimeter, centroid.</p>
+            <p><strong>ISO-XML</strong> — ISOBUS ISO 11783 standard for farm equipment task data.</p>
+            <p><strong>Shapefile</strong> — Classic desktop GIS format via shpwrite library.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toasts -->
+      <div class="toast-container" id="toastContainer"></div>
+    </div>
+  </main>
+  <!-- Welcome Modal -->
+  <div class="modal-overlay" id="welcomeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-brand">PAGAF <span class="modal-version">v4</span></span>
+        <button class="modal-close" id="welcomeClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h2>Precision AG for All Farmers</h2>
+        <p class="modal-subtitle">Free, browser-based precision agriculture. Select fields on USDA aerial imagery, generate prescription maps, and export directly to your farm equipment.</p>
+        <div class="modal-steps">
+          <div class="modal-step"><div class="ms-num">1</div><div><strong>Find your field</strong><p>Search or zoom to your farmland on NAIP imagery</p></div></div>
+          <div class="modal-step"><div class="ms-num">2</div><div><strong>Draw boundaries</strong><p>Click to draw or upload GeoJSON / KML / Shapefile</p></div></div>
+          <div class="modal-step"><div class="ms-num">3</div><div><strong>Choose application</strong><p>NDVI, fertilizer, seeding, pest mapping, yield</p></div></div>
+          <div class="modal-step"><div class="ms-num">4</div><div><strong>Export to equipment</strong><p>GeoJSON, KML, CSV, ISO-XML, Shapefile</p></div></div>
+        </div>
+        <div class="modal-features">
+          <span class="modal-feature">&#x2705; 100% free</span>
+          <span class="modal-feature">&#x2705; No account required</span>
+          <span class="modal-feature">&#x2705; Works offline</span>
+          <span class="modal-feature">&#x2705; Open data sources</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cta" id="welcomeStart">Start Mapping</button>
+        <label class="modal-remember"><input type="checkbox" id="welcomeDontShow"> Don't show this again</label>
       </div>
     </div>
-    <!-- Results Panel -->
-    <div class="results-panel" id="resultsPanel">
-      <div class="results-header"><span>Analysis Results</span><button class="results-close" id="resultsClose">&times;</button></div>
-      <div class="results-body" id="resultsBody"></div>
-      <div class="results-footer"><button class="results-export-btn" id="resultsExportBtn">Export Results</button></div>
-    </div>
-    <!-- Toasts -->
-    <div class="toast-container" id="toastContainer"></div>
   </div>
-</main>
 
-<!-- Welcome Modal -->
-<div class="modal-overlay" id="welcomeModal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-brand">PAGAF</span>
-      <button class="modal-close" id="welcomeClose">&times;</button>
-    </div>
-    <div class="modal-body">
-      <h2>Precision AG for All Farmers</h2>
-      <p class="modal-subtitle">Select fields on USDA aerial imagery, generate prescription maps, and export directly to your farm equipment.</p>
-      <div class="modal-steps">
-        <div class="modal-step"><div class="ms-num">1</div><div><strong>Find your field</strong><p>Search or zoom to your farmland on NAIP imagery</p></div></div>
-        <div class="modal-step"><div class="ms-num">2</div><div><strong>Draw boundaries</strong><p>Click to draw a polygon around your field(s)</p></div></div>
-        <div class="modal-step"><div class="ms-num">3</div><div><strong>Choose application</strong><p>Select fertilizer, seeding, pest mapping, or NDVI</p></div></div>
-        <div class="modal-step"><div class="ms-num">4</div><div><strong>Export to equipment</strong><p>Download to John Deere, Case IH, Trimble, or GeoJSON</p></div></div>
+  <!-- About Modal -->
+  <div class="modal-overlay hidden" id="aboutModal">
+    <div class="modal">
+      <div class="modal-header"><span>About PAGAF</span><button class="modal-close" id="aboutClose">&times;</button></div>
+      <div class="modal-body">
+        <h2>PAGAF v4.0</h2>
+        <p class="modal-subtitle">Precision AG for All Farmers — a free, browser-based precision agriculture platform powered by nltGIS.ai.</p>
+        <div class="about-grid">
+          <div class="about-item"><strong>Map Engine</strong><p>MapLibre GL JS (open source)</p></div>
+          <div class="about-item"><strong>Spatial Analysis</strong><p>Turf.js (open source)</p></div>
+          <div class="about-item"><strong>Default Basemap</strong><p>USDA NAIP Aerial Imagery</p></div>
+          <div class="about-item"><strong>Basemaps</strong><p>OSM, Esri, USGS Topo, CARTO</p></div>
+          <div class="about-item"><strong>Soil Data</strong><p>USDA SSURGO via WMS</p></div>
+          <div class="about-item"><strong>Crop Data</strong><p>USDA NASS CDL via WMS</p></div>
+          <div class="about-item"><strong>Import</strong><p>GeoJSON, KML, Shapefile (ZIP)</p></div>
+          <div class="about-item"><strong>Export</strong><p>GeoJSON, KML, CSV, ISO-XML, SHP</p></div>
+        </div>
+        <p class="about-credits">Built by <a href="https://github.com/precisionAGTech" target="_blank">precisionAGTech</a> · Powered by <a href="https://nltgis.ai" target="_blank">nltGIS.ai</a></p>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="modal-cta" id="welcomeStart">Start Mapping</button>
-      <label class="modal-remember"><input type="checkbox" id="welcomeDontShow"> Don't show this again</label>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal-overlay hidden" id="shortcutsModal">
+    <div class="modal modal-sm">
+      <div class="modal-header"><span>Keyboard Shortcuts</span><button class="modal-close" id="shortcutsClose">&times;</button></div>
+      <div class="modal-body shortcuts-body">
+        <div class="shortcut-row"><kbd>D</kbd><span>Draw polygon</span></div>
+        <div class="shortcut-row"><kbd>R</kbd><span>Draw rectangle</span></div>
+        <div class="shortcut-row"><kbd>M</kbd><span>Measure distance</span></div>
+        <div class="shortcut-row"><kbd>Esc</kbd><span>Cancel drawing / measure</span></div>
+        <div class="shortcut-row"><kbd>F</kbd><span>Zoom to fields</span></div>
+        <div class="shortcut-row"><kbd>L</kbd><span>Toggle data layers</span></div>
+        <div class="shortcut-row"><kbd>Ctrl+Z</kbd><span>Undo</span></div>
+        <div class="shortcut-row"><kbd>Ctrl+Y</kbd><span>Redo</span></div>
+        <div class="shortcut-row"><kbd>Del</kbd><span>Delete selected field</span></div>
+        <div class="shortcut-row"><kbd>1-4</kbd><span>Jump to workflow step</span></div>
+        <div class="shortcut-row"><kbd>S</kbd><span>Toggle sidebar</span></div>
+        <div class="shortcut-row"><kbd>/</kbd><span>Focus search</span></div>
+        <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Keyboard Shortcuts Modal -->
-<div class="modal-overlay hidden" id="shortcutsModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><span>Keyboard Shortcuts</span><button class="modal-close" id="shortcutsClose">&times;</button></div>
-    <div class="modal-body shortcuts-body">
-      <div class="shortcut-row"><kbd>D</kbd><span>Draw polygon</span></div>
-      <div class="shortcut-row"><kbd>R</kbd><span>Draw rectangle</span></div>
-      <div class="shortcut-row"><kbd>Esc</kbd><span>Cancel drawing</span></div>
-      <div class="shortcut-row"><kbd>F</kbd><span>Zoom to fields</span></div>
-      <div class="shortcut-row"><kbd>1-4</kbd><span>Jump to workflow step</span></div>
-      <div class="shortcut-row"><kbd>S</kbd><span>Toggle sidebar</span></div>
-      <div class="shortcut-row"><kbd>/</kbd><span>Focus search</span></div>
-      <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
-    </div>
-  </div>
-</div>
-
-<script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
-<script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
-<script src="js/pagaf.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
+  <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.min.js"></script>
+  <script src="https://unpkg.com/@mapbox/shp-write@0.4.2/shpwrite.js"></script>
+  <script src="js/pagaf.js"></script>
 </body>
-                </html>
+        </html>
